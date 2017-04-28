@@ -20,17 +20,18 @@ This repository contains:
 * Maya. _I've used 2017 v3 Student Edition. I think every other version is fine_
 ### Quick Start
 1. Connect the rotary encoder to the Arduino. Pin mapping:  
+
+| Rotary encoder pin | Arduino pin |
+| ---                | ---         |
+| `A`                | `D2`        |
+| `B`                | `D8`        |
+| `REF`              | `GND`       |
 2. Flash the Arduino sketch to you board
 3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
 4. Load the `arduinomaya.py` plugin within a Maya session
 5. Create an `arduinoNode` and connect its `Output` attribute to whichever node you may have in you scene
 6. Run the `src/driver/serial2maya.py` Python script
 7. Enjoy
-Rotary encoder pin | Arduino pin  
---- | ---  
-`A` | `D2`  
-`B` | `D8`  
-`REF` | `GND`  
 
 ## How does this works
 We got three entities: the Arduino board, the OS and the Maya session. We need to make them exchange messages:  
