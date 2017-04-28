@@ -20,11 +20,11 @@ This repository contains:
 * Maya. _I've used 2017 v3 Student Edition. I think every other version is fine_
 ### Quick Start
 1. Connect the rotary encoder to the Arduino. Pin mapping:
-..| Rotary encoder pin | Arduino pin |
-..| ------------------ | ----------- |
-..| `A`                | `D2`        |
-..| `B`                | `D8`        |
-..| `REF`              | `GND`       |
+| Rotary encoder pin | Arduino pin |
+| ------------------ | ----------- |
+| `A`                | `D2`        |
+| `B`                | `D8`        |
+| `REF`              | `GND`       |
 2. Flash the Arduino sketch to you board
 3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
 4. Load the `arduinomaya.py` plugin within a Maya session
