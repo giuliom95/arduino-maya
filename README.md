@@ -1,6 +1,7 @@
 # Arduino-Maya communication suite
-Software to make an Arduino board and a Maya session communicate. This can be particularly useful to create custom input devices.  
-It is programmed in Python and Arduino. It uses pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial)).
+Software to make an Arduino board and a Maya session communicate.  
+This can be particularly useful to create custom input devices.  
+It is programmed in Python and Arduino language. It uses pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial)).
 
 ## Directory structure
 This repository contains:
@@ -13,11 +14,11 @@ This repository contains:
 
 ## How to use this
 ### What do you need
-* An Arduino board. _I've used an Arduino UNO v3. You can use every other Arduino board. Just watch out for interrupt mappings_
+* An Arduino board. _I've used an UNO v3. Other boards are ok. Just watch out for interrupt mappings_
 * A three pin rotary encoder
 * Jumper wires
 * pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial))
-* Maya. _I've used 2017 v3 Student Edition. I think every other version is fine_
+* Maya. _I've used the 2017 v3 Student Edition. Other versions are fine_
 ### Quick Start
 1. Connect the rotary encoder to the Arduino. Pin mapping:  
 
@@ -29,14 +30,14 @@ This repository contains:
 2. Flash the Arduino sketch to you board
 3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
 4. Load the `arduinomaya.py` plugin within a Maya session
-5. Create an `arduinoNode` and connect its `Output` attribute to whichever node you may have in you scene
+5. Create an `arduinoNode` and connect its `Output` attribute wherever you want.
 6. Run the `src/driver/serial2maya.py` Python script
 7. Enjoy
 
 ## How does this works
 We got three entities: the Arduino board, the OS and the Maya session. We need to make them exchange messages:  
-![System diagram](https://github.com/giuliom95/arduino-maya/tree/master/docs/images/system_diagram.png)  
-The Arduino board can communicate with the computer through a serial data stream via the USB cable and the OS can send commands to a Maya session through the `commandPort` socket built-in in Maya. So we need three software pieces: (1) the firmware on the Arduino board, (2) a program that reads and feeds the serial stream to the `commandPort` socket and (3) a Maya plugin to provide an interface for external communication and to make the data available to its internal data structures.
+![System diagram](https://raw.githubusercontent.com/giuliom95/arduino-maya/master/docs/images/system_diagram.png)  
+The Arduino board can communicate with the computer through a serial data stream via the USB cable and the OS can send commands to a Maya session through the `commandPort` socket built-in in Maya. So we need three software pieces: (1) the firmware on the Arduino board, (2) a "driver" that reads and feeds the serial stream to the `commandPort` socket and (3) a Maya plugin to provide an interface for external communication and to make the data available to its internal data structures.
 ### 1: The firmware
 The Arduino firmware provided simply reads the pulses of a rotary encoder and outputs periodically the number of ticks that the encoder has done in that period. It uses the interrupts mapping of the Arduino UNO board.
 ### 2: The "bridge" program
