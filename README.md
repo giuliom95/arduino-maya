@@ -46,3 +46,7 @@ It is a simple Python script that uses the `pySerial` lib for Arduino serial com
 It adds to Maya a new DG node and a new MEL command.  
 The DG node called `arduinoNode` has two visible float attributes: `Output` and `Multiplier`. The `Output` attribute must be connected to the node to control via Arduino (typically a transform or a rig component) while `Multiplier` manages the sensibility of the controls.  
 The MEL command called `arduinoUpdateChannel` takes an integer as argument and modifies the `Output` attribute of the `arduinoNode` by adding to it the argument multiplied by the current value of the `Multiplier` attribute.
+
+## To do
+* Multiple channels support
+* Make the `Value` attribute of `arduinoNode` set itself to the value of the plug which `Output` has been connected
