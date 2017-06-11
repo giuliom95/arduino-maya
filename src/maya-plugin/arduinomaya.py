@@ -32,6 +32,19 @@ class NodeClass(OpenMaya.MPxNode):
 
     @staticmethod
     def nodeInitializer():
+        '''
+        Three float numeric attributes are needed:
+            * aMultiplier (input): 
+                This input can be controlled by the user
+                and determines the influence of every step 
+                of the rotary encoder.
+            * aValue (input):
+                This stores the current value. It is hidden
+                from the user.
+            * aOutput (output):
+                This is the plug to connect to the node
+                to control.
+        '''
         numericAttributeFn = OpenMaya.MFnNumericAttribute()
 
         NodeClass.aMultiplier = numericAttributeFn.create(
@@ -67,7 +80,10 @@ class NodeClass(OpenMaya.MPxNode):
         )
 
     def compute(self, pPlug, pDataBlock):
-
+        '''
+        The node computation is easy. We broadcast directly
+        the aValue attribute to the aOutput one.
+        '''
         if pPlug == NodeClass.aOutput:
             aValHandle = pDataBlock.inputValue(NodeClass.aValue)
             aOutHandle = pDataBlock.outputValue(NodeClass.aOutput)
@@ -93,6 +109,11 @@ class CommandClass(OpenMaya.MPxCommand):
         return CommandClass()
 
     def doIt(self, args):
+        '''
+        To control the attributes of the arduinoNode instance,
+        we use PyMEL. It's for sure the slowest approach to
+        compute, but it is also the faster to code.
+        '''
         delta = args.asInt(0)
         node = pmc.ls(et=pmc.nt.ArduinoNode)[0]
         mul = node.getAttr('mul')

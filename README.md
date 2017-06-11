@@ -20,14 +20,14 @@ This repository contains:
 * pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial))
 * Maya. _I've used the 2017 v3 Student Edition. Other versions are fine_
 ### Quick Start
-1. Connect the rotary encoder to the Arduino. Pin mapping:  
+1. Connect the rotary encoder to the Arduino. Arduino UNO v3 pin mapping:  
 
 | Rotary encoder pin | Arduino pin |
 | ---                | ---         |
 | `A`                | `D2`        |
 | `B`                | `D8`        |
 | `REF`              | `GND`       |
-2. Flash the Arduino sketch to you board
+2. Flash the Arduino sketch to your board
 3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
 4. Load the `arduinomaya.py` plugin within a Maya session
 5. Create an `arduinoNode` and connect its `Output` attribute wherever you want.
@@ -39,9 +39,9 @@ We got three entities: the Arduino board, the OS and the Maya session. We need t
 ![System diagram](https://raw.githubusercontent.com/giuliom95/arduino-maya/master/docs/images/system_diagram.png)  
 The Arduino board can communicate with the computer through a serial data stream via the USB cable and the OS can send commands to a Maya session through the `commandPort` socket built-in in Maya. So we need three software pieces: (1) the firmware on the Arduino board, (2) a "driver" that reads and feeds the serial stream to the `commandPort` socket and (3) a Maya plugin to provide an interface for external communication and to make the data available to its internal data structures.
 ### 1: The firmware
-The Arduino firmware provided simply reads the pulses of a rotary encoder and outputs periodically the number of ticks that the encoder has done in that period. It uses the interrupts mapping of the Arduino UNO board.
+The Arduino firmware provided reads the pulses of a rotary encoder and outputs periodically the number of ticks that the encoder has done in that period. It uses the interrupts mapping of the Arduino UNO board.
 ### 2: The "bridge" program
-It is a simple Python script that uses the `pySerial` lib for Arduino serial communication and the `socket` module to send messages to Maya. It consists in an endless loop that runs the MEL command defined in the Maya plugin passing as arguments the data coming through the serial port.
+It is a Python script that uses the `pySerial` lib for Arduino to PC serial communication and the `socket` module to send messages to Maya. It runs an endless loop that launches the MEL command defined in the Maya plugin passing as arguments the data coming through the serial port.
 ### 3: The Maya plugin
 It adds to Maya a new DG node and a new MEL command.  
 The DG node called `arduinoNode` has two visible float attributes: `Output` and `Multiplier`. The `Output` attribute must be connected to the node to control via Arduino (typically a transform or a rig component) while `Multiplier` manages the sensibility of the controls.  
