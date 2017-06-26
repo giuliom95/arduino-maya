@@ -6,7 +6,7 @@ It is programmed in Python and Arduino language. It uses pySerial ([https://gith
 ## Directory structure
 This repository contains:
 * A Maya Python API/PyMEL plugin
-    ([src/maya-plugin](https://github.com/giuliom95/arduino-maya/tree/master/src/maya-plugin))
+    ([src/maya](https://github.com/giuliom95/arduino-maya/tree/master/src/maya))
 * A Python script to read the serial stream incoming from Arduino and feed it to Maya via socket connection
     ([src/driver](https://github.com/giuliom95/arduino-maya/tree/master/src/driver))
 * An Arduino test sketch
@@ -19,7 +19,7 @@ This repository contains:
 * Jumper wires
 * pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial))
 * Maya. _I've used the 2017 v3 Student Edition. Other versions are fine_
-### Quick Start
+### Quick Start [WIP]
 1. Connect the rotary encoder to the Arduino. Arduino UNO v3 pin mapping:  
 
 | Rotary encoder pin | Arduino pin |
@@ -30,9 +30,7 @@ This repository contains:
 2. Flash the Arduino sketch to your board
 3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
 4. Load the `arduinomaya.py` plugin within a Maya session
-5. Create an `arduinoNode` and connect its `Output` attribute wherever you want.
-6. Run the `src/driver/serial2maya.py` Python script
-7. Enjoy
+5. WORK IN PROGRESS
 
 ## How does this works
 We got three entities: the Arduino board, the OS and the Maya session. We need to make them exchange messages:  
@@ -42,10 +40,8 @@ The Arduino board can communicate with the computer through a serial data stream
 The Arduino firmware provided reads the pulses of a rotary encoder and outputs periodically the number of ticks that the encoder has done in that period. It uses the interrupts mapping of the Arduino UNO board.
 ### 2: The "bridge" program
 It is a Python script that uses the `pySerial` lib for Arduino to PC serial communication and the `socket` module to send messages to Maya. It runs an endless loop that launches the MEL command defined in the Maya plugin passing as arguments the data coming through the serial port.
-### 3: The Maya plugin
-It adds to Maya a new DG node and a new MEL command.  
-The DG node called `arduinoNode` has two visible float attributes: `Output` and `Multiplier`. The `Output` attribute must be connected to the node to control via Arduino (typically a transform or a rig component) while `Multiplier` manages the sensibility of the controls.  
-The MEL command called `arduinoUpdateChannel` takes an integer as argument and modifies the `Output` attribute of the `arduinoNode` by adding to it the argument multiplied by the current value of the `Multiplier` attribute.
+### 3: The Maya plugin [WIP]
+WORK IN PROGRESS
 
 ## To do
 * Multiple channels support

@@ -3,6 +3,10 @@ import maya.api.OpenMaya as OpenMaya
 import pymel.core as pmc
 
 
+class Channel():
+    channel = ('', '')
+
+
 def maya_useNewAPI():
     '''
     The presence of this function tells Maya that the plugin produces, and
@@ -12,93 +16,41 @@ def maya_useNewAPI():
 
 
 ##########################################################
-# Node Class definition
+# Commands Classes definitions
 ##########################################################
-class NodeClass(OpenMaya.MPxNode):
-    nodeName = 'arduinoNode'
-    nodeClassify = 'utility/general'
-    nodeId = OpenMaya.MTypeId(0x1923)
 
-    aMultiplier = OpenMaya.MObject()
-    aValue = OpenMaya.MObject()
-    aOutput = OpenMaya.MObject()
+class ConnectAttributeCommand(OpenMaya.MPxCommand):
+    commandName = 'arduinoConnectAttribute'
 
     def __init__(self):
-        OpenMaya.MPxNode.__init__(self)
+        OpenMaya.MPxCommand.__init__(self)
 
     @staticmethod
-    def nodeCreator():
-        return NodeClass()
+    def commandCreator():
+        return ConnectAttributeCommand()
 
-    @staticmethod
-    def nodeInitializer():
-        '''
-        Three float numeric attributes are needed:
-            * aMultiplier (input): 
-                This input can be controlled by the user
-                and determines the influence of every step 
-                of the rotary encoder.
-            * aValue (input):
-                This stores the current value. It is hidden
-                from the user.
-            * aOutput (output):
-                This is the plug to connect to the node
-                to control.
-        '''
-        numericAttributeFn = OpenMaya.MFnNumericAttribute()
+    def doIt(self, args):
+        if len(args) != 2:
+            raise AttributeError('Syntax: object name, object attribute')
 
-        NodeClass.aMultiplier = numericAttributeFn.create(
-            'multiplier', 'mul',
-            OpenMaya.MFnNumericData.kFloat, 1.0
-        )
-        numericAttributeFn.writable = True
-        numericAttributeFn.storable = True
+        obj_name = args.asString(0)
+        obj_attr = args.asString(1)
 
-        NodeClass.aValue = numericAttributeFn.create(
-            'value', 'val',
-            OpenMaya.MFnNumericData.kFloat, 0
-        )
-        numericAttributeFn.writable = True
-        numericAttributeFn.storable = True
-        numericAttributeFn.hidden = True
+        try:
+            obj = pmc.ls(obj_name)[0]
+        except:
+            raise AttributeError('No object called ' + obj_name)
 
-        NodeClass.aOutput = numericAttributeFn.create(
-            'output', 'o',
-            OpenMaya.MFnNumericData.kFloat
-        )
-        numericAttributeFn.storable = False
-        numericAttributeFn.writable = False
-        numericAttributeFn.readable = True
+        if not obj.hasAttr(obj_attr):
+            raise AttributeError('No attribute of ' + obj_name + ' called ' + obj_attr)
 
-        NodeClass.addAttribute(NodeClass.aMultiplier)
-        NodeClass.addAttribute(NodeClass.aValue)
-        NodeClass.addAttribute(NodeClass.aOutput)
+        if type(obj.getAttr(obj_attr)) != float:
+            raise AttributeError('Attribute ' + obj_attr + ' of ' + obj_name + ' is not a float.' )
 
-        NodeClass.attributeAffects(
-            NodeClass.aValue,
-            NodeClass.aOutput
-        )
-
-    def compute(self, pPlug, pDataBlock):
-        '''
-        The node computation is easy. We broadcast directly
-        the aValue attribute to the aOutput one.
-        '''
-        if pPlug == NodeClass.aOutput:
-            aValHandle = pDataBlock.inputValue(NodeClass.aValue)
-            aOutHandle = pDataBlock.outputValue(NodeClass.aOutput)
-
-            aOutHandle.setFloat(aValHandle.asFloat())
-
-            aOutHandle.setClean()
-        else:
-            return OpenMaya.kUnknownParameter
+        Channel.channel = (obj_name, obj_attr)
 
 
-##########################################################
-# Command Class definition
-##########################################################
-class CommandClass(OpenMaya.MPxCommand):
+class UpdateChannelCommand(OpenMaya.MPxCommand):
     commandName = 'arduinoUpdateChannel'
 
     def __init__(self):
@@ -106,18 +58,15 @@ class CommandClass(OpenMaya.MPxCommand):
 
     @staticmethod
     def commandCreator():
-        return CommandClass()
+        return UpdateChannelCommand()
 
     def doIt(self, args):
-        '''
-        To control the attributes of the arduinoNode instance,
-        we use PyMEL. It's for sure the slowest approach to
-        compute, but it is also the faster to code.
-        '''
         delta = args.asInt(0)
-        node = pmc.ls(et=pmc.nt.ArduinoNode)[0]
-        mul = node.getAttr('mul')
-        node.setAttr('val', node.getAttr('val') + delta*mul)
+        obj_name, obj_attr = Channel.channel
+        obj = pmc.ls(obj_name)[0]
+        value = obj.getAttr(obj_attr)
+        value += delta
+        obj.setAttr(obj_attr, value)
 
 
 ##########################################################
@@ -129,27 +78,23 @@ def initializePlugin(mobject):
     mplugin = OpenMaya.MFnPlugin(mobject)
 
     try:
-        mplugin.registerNode(
-            NodeClass.nodeName,
-            NodeClass.nodeId,
-            NodeClass.nodeCreator,
-            NodeClass.nodeInitializer,
-            OpenMaya.MPxNode.kDependNode,
-            NodeClass.nodeClassify
+        mplugin.registerCommand(
+            ConnectAttributeCommand.commandName,
+            ConnectAttributeCommand.commandCreator
         )
     except:
         sys.stderr.write(
-            'Failed to register node: ' + NodeClass.nodeName)
+            'Failed to register command: ' + ConnectAttributeCommand.commandName)
         raise
 
     try:
         mplugin.registerCommand(
-            CommandClass.commandName,
-            CommandClass.commandCreator
+            UpdateChannelCommand.commandName,
+            UpdateChannelCommand.commandCreator
         )
     except:
         sys.stderr.write(
-            'Failed to register command: ' + CommandClass.commandName)
+            'Failed to register command: ' + UpdateChannelCommand.commandName)
         raise
 
 
@@ -159,15 +104,15 @@ def uninitializePlugin(mobject):
     mplugin = OpenMaya.MFnPlugin(mobject)
 
     try:
-        mplugin.deregisterNode(NodeClass.nodeId)
+        mplugin.deregisterCommand(ConnectAttributeCommand.commandName)
     except:
         sys.stderr.write(
-            'Failed to deregister node: ' + NodeClass.nodeName)
+            'Failed to unregister command: ' + ConnectAttributeCommand.commandName)
         raise
 
     try:
-        mplugin.deregisterCommand(CommandClass.commandName)
+        mplugin.deregisterCommand(UpdateChannelCommand.commandName)
     except:
         sys.stderr.write(
-            'Failed to unregister command: ' + CommandClass.commandName)
+            'Failed to unregister command: ' + UpdateChannelCommand.commandName)
         raise
