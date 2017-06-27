@@ -60,6 +60,32 @@ class ConnectAttributeCommand(OpenMaya.MPxCommand):
         Channel.channels[channel] = (obj_name, obj_attr)
 
 
+class ConnectTimeCommand(OpenMaya.MPxCommand):
+    commandName = 'arduinoConnectTime'
+
+    def __init__(self):
+        OpenMaya.MPxCommand.__init__(self)
+
+    @staticmethod
+    def commandCreator():
+        return ConnectTimeCommand()
+
+    def doIt(self, args):
+        syntax = 'Syntax: channel.'
+        if len(args) != 1:
+            raise ValueError('Wrong arguments number. ' + syntax)
+
+        try:
+            channel = args.asInt(0)
+        except:
+            raise ValueError('Invalid channel. ' + syntax)
+
+        if channel > CHANNELS_NUM or channel < 0:
+            raise ValueError('Invalid channel number. ' + syntax)
+
+        Channel.channels[channel] = 'time'
+
+
 class UpdateChannelCommand(OpenMaya.MPxCommand):
     commandName = 'arduinoUpdateChannel'
 
@@ -73,13 +99,17 @@ class UpdateChannelCommand(OpenMaya.MPxCommand):
     def doIt(self, args):
         channel = args.asInt(0)
         delta = args.asInt(1)
-        obj_name, obj_attr = Channel.channels[channel]
-        if obj_name == '':
-            return
-        obj = pmc.ls(obj_name)[0]
-        value = obj.getAttr(obj_attr)
-        value += delta
-        obj.setAttr(obj_attr, value)
+        if Channel.channels[channel] == 'time':
+            new_t = pmc.currentTime() + delta
+            pmc.currentTime(new_t)
+        else:
+            obj_name, obj_attr = Channel.channels[channel]
+            if obj_name == '':
+                return
+            obj = pmc.ls(obj_name)[0]
+            value = obj.getAttr(obj_attr)
+            value += delta
+            obj.setAttr(obj_attr, value)
 
 
 ##########################################################
@@ -98,6 +128,16 @@ def initializePlugin(mobject):
     except:
         sys.stderr.write(
             'Failed to register command: ' + ConnectAttributeCommand.commandName)
+        raise
+
+    try:
+        mplugin.registerCommand(
+            ConnectTimeCommand.commandName,
+            ConnectTimeCommand.commandCreator
+        )
+    except:
+        sys.stderr.write(
+            'Failed to register command: ' + ConnectTimeCommand.commandName)
         raise
 
     try:
@@ -121,6 +161,13 @@ def uninitializePlugin(mobject):
     except:
         sys.stderr.write(
             'Failed to unregister command: ' + ConnectAttributeCommand.commandName)
+        raise
+
+    try:
+        mplugin.deregisterCommand(ConnectTimeCommand.commandName)
+    except:
+        sys.stderr.write(
+            'Failed to unregister command: ' + ConnectTimeCommand.commandName)
         raise
 
     try:
