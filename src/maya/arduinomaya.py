@@ -2,9 +2,11 @@ import sys
 import maya.api.OpenMaya as OpenMaya
 import pymel.core as pmc
 
+CHANNELS_NUM = 2
+
 
 class Channel():
-    channel = ('', '')
+    channels = [('', '')]*CHANNELS_NUM
 
 
 def maya_useNewAPI():
@@ -30,24 +32,32 @@ class ConnectAttributeCommand(OpenMaya.MPxCommand):
         return ConnectAttributeCommand()
 
     def doIt(self, args):
-        if len(args) != 2:
-            raise AttributeError('Syntax: object name, object attribute')
+        syntax = 'Syntax: channel, object name, object attribute'
+        if len(args) != 3:
+            raise ValueError('Wrong arguments number. ' + syntax)
 
-        obj_name = args.asString(0)
-        obj_attr = args.asString(1)
+        try:
+            channel = args.asInt(0)
+            obj_name = args.asString(1)
+            obj_attr = args.asString(2)
+        except:
+            raise ValueError('Invalid arguments. ' + syntax)
+
+        if channel > CHANNELS_NUM or channel < 0:
+            raise ValueError('Invalid channel number. ' + syntax)
 
         try:
             obj = pmc.ls(obj_name)[0]
         except:
-            raise AttributeError('No object called ' + obj_name)
+            raise ValueError('No object called ' + obj_name)
 
         if not obj.hasAttr(obj_attr):
-            raise AttributeError('No attribute of ' + obj_name + ' called ' + obj_attr)
+            raise ValueError('No attribute of ' + obj_name + ' called ' + obj_attr)
 
         if type(obj.getAttr(obj_attr)) != float:
-            raise AttributeError('Attribute ' + obj_attr + ' of ' + obj_name + ' is not a float.' )
+            raise ValueError('Attribute ' + obj_attr + ' of ' + obj_name + ' is not a float.' )
 
-        Channel.channel = (obj_name, obj_attr)
+        Channel.channels[channel] = (obj_name, obj_attr)
 
 
 class UpdateChannelCommand(OpenMaya.MPxCommand):
@@ -61,8 +71,11 @@ class UpdateChannelCommand(OpenMaya.MPxCommand):
         return UpdateChannelCommand()
 
     def doIt(self, args):
-        delta = args.asInt(0)
-        obj_name, obj_attr = Channel.channel
+        channel = args.asInt(0)
+        delta = args.asInt(1)
+        obj_name, obj_attr = Channel.channels[channel]
+        if obj_name == '':
+            return
         obj = pmc.ls(obj_name)[0]
         value = obj.getAttr(obj_attr)
         value += delta

@@ -17,15 +17,16 @@ if __name__ == '__main__':
     print('Arduino connection established.')
 
     while True:
-        delta = arduinoconn.readline().rstrip()
-        try:
-            int(delta)
-        except:
-            pass
-        else:
-            if delta != '0':
-                cmd = 'arduinoUpdateChannel ' + delta
-                mayaconn.send(cmd)
+        deltas = arduinoconn.readline().split()
+        for i, d in enumerate(deltas):
+            try:
+                int(d)
+            except:
+                pass
+            else:
+                if d != '0':
+                    cmd = 'arduinoUpdateChannel ' + str(i) + ' ' + d
+                    mayaconn.send(cmd)
 
     arduinoconn.close()
     print('Arduino connection closed.')
