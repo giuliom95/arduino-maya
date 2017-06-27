@@ -8,7 +8,7 @@ volatile boolean interr;
 
 boolean A, B;
 
-int8_t d1;
+int8_t d1, d2;
 
 int ticks;
 
@@ -18,6 +18,7 @@ void setup() {
     pinMode(INTERR_PIN, INPUT_PULLUP);
     attachInterrupt(INTERR_NUM, manageInterr, RISING);
     ticks = 0;
+    d1 = d2 = 0;
 }
 
 
@@ -33,7 +34,9 @@ void loop() {
     ++ticks;
     if(ticks == WRITE_TICKS) {
         ticks = 0;
-        Serial.println(d1);
+        Serial.print(d1);
+        Serial.print(" ");
+        Serial.println(d2);
         d1 = 0;
     }
 }
