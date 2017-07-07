@@ -21,7 +21,7 @@ This repository contains:
 * Maya. _I've used the 2017 v3 Student Edition. Not too old versions are fine too_
 ### Quick Start
 1. Follow this circuit diagram to make the connections:  
-![Circuit diagram](./docs/images/circuit.svg)
+![Circuit diagram](https://raw.githubusercontent.com/giuliom95/arduino-maya/master/docs/images/circuit.svg)
 2. Flash the Arduino sketch `src/arduino/firmware.ino` to your board
 3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
 4. Load the `arduinomaya.py` plugin within a Maya session
@@ -29,7 +29,7 @@ This repository contains:
 
 ## How does this works
 Here an approximate system diagram:  
-![System diagram](./docs/images/system.svg)  
+![System diagram](https://raw.githubusercontent.com/giuliom95/arduino-maya/master/docs/images/system.svg)  
 The data flow is pretty simple. The potentiometers generate analog signals. The Arduino board converts them with its ADC and sends them through serial connection to the computer where Maya is running. Here the signals are translated into Maya commands and are feeded to the Maya session through its `commandPort` socket.
 Finally, Maya must understand them and modify the current scene.
 
