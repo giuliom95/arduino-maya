@@ -2,7 +2,7 @@ import sys
 import maya.api.OpenMaya as OpenMaya
 import pymel.core as pmc
 
-CHANNELS_NUM = 2
+CHANNELS_NUM = 3
 
 
 class Channel():
