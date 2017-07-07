@@ -9,40 +9,38 @@ This repository contains:
     ([src/maya](https://github.com/giuliom95/arduino-maya/tree/master/src/maya))
 * A Python script to read the serial stream incoming from Arduino and feed it to Maya via socket connection
     ([src/driver](https://github.com/giuliom95/arduino-maya/tree/master/src/driver))
-* An Arduino test sketch
+* An Arduino test firmware
     ([src/arduino](https://github.com/giuliom95/arduino-maya/tree/master/src/arduino))
 
 ## How to use this
 ### What do you need
 * An Arduino board. _I've used an UNO v3. Other boards are ok. Just watch out for interrupt mappings_
-* A three pin rotary encoder
+* Three potentiometers. _I reccomend sliders. But the choice is yours_
 * Jumper wires
 * pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial))
-* Maya. _I've used the 2017 v3 Student Edition. Other versions are fine_
-### Quick Start [WIP]
-1. Connect the rotary encoder to the Arduino. Arduino UNO v3 pin mapping:  
-
-| Rotary encoder pin | Arduino pin |
-| ---                | ---         |
-| `A`                | `D2`        |
-| `B`                | `D8`        |
-| `REF`              | `GND`       |
-2. Flash the Arduino sketch to your board
+* Maya. _I've used the 2017 v3 Student Edition. Not too old versions are fine too_
+### Quick Start
+1. Follow this circuit diagram to make the connections:  
+![Circuit diagram](./docs/images/circuit.svg)
+2. Flash the Arduino sketch `src/arduino/firmware.ino` to your board
 3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
 4. Load the `arduinomaya.py` plugin within a Maya session
-5. WORK IN PROGRESS
+5. Connect the three available channels to attributes or the time slider with the `arduinoConnectAttribute` and `arduinoConnectTime` commands (see below for reference)
 
 ## How does this works
-We got three entities: the Arduino board, the OS and the Maya session. We need to make them exchange messages:  
-![System diagram](https://raw.githubusercontent.com/giuliom95/arduino-maya/master/docs/images/system_diagram.png)  
-The Arduino board can communicate with the computer through a serial data stream via the USB cable and the OS can send commands to a Maya session through the `commandPort` socket built-in in Maya. So we need three software pieces: (1) the firmware on the Arduino board, (2) a "driver" that reads and feeds the serial stream to the `commandPort` socket and (3) a Maya plugin to provide an interface for external communication and to make the data available to its internal data structures.
-### 1: The firmware
-The Arduino firmware provided reads the pulses of a rotary encoder and outputs periodically the number of ticks that the encoder has done in that period. It uses the interrupts mapping of the Arduino UNO board.
-### 2: The "bridge" program
-It is a Python script that uses the `pySerial` lib for Arduino to PC serial communication and the `socket` module to send messages to Maya. It runs an endless loop that launches the MEL command defined in the Maya plugin passing as arguments the data coming through the serial port.
-### 3: The Maya plugin [WIP]
-WORK IN PROGRESS
+Here an approximate system diagram:  
+![System diagram](./docs/images/system.svg)  
+The data flow is pretty simple. The potentiometers generate analog signals. The Arduino board converts them with its ADC and sends them through serial connection to the computer where Maya is running. Here the signals are translated into Maya commands and are feeded to the Maya session through its `commandPort` socket.
+Finally, Maya must understand them and modify the current scene.
 
-## To do
-* Multiple channels support
-* Make the `Value` attribute of `arduinoNode` set itself to the value of the plug which `Output` has been connected
+To make this work, three software pieces are needed: the Arduino firmware, the "Serial to Maya" driver, and a Maya plugin. Here the details for each piece.
+
+### 1: The firmware
+The provided Arduino firmware reads the three analog signals that comes into `A0`,`A1`, and `A2` ports. Every ~30ms it puts the delta value for each port in to the Serial outgoing stream.
+### 2: The "bridge" program
+It is a Python script that uses the `pySerial` lib for Arduino to PC serial communication and the `socket` module to send messages to Maya. It runs an endless loop that launches the MEL command defined in the Maya plugin.
+### 3: The Maya plugin
+The plugin adds three commands:  
+* `arduinoConnectAttribute <channel> <object> <attribute>`: This connects the `channel` to the `attribute` of the given `object`. The `attribute` must be a float attribute. **Example:** `arduinoConnectAttribute 0 pCube1 rotateX` this connects the first channel (or potentiometer if you are using the firmware provided here) to the attribute `rotateX` of the `pCube1` object.
+* `arduinoConnectTime <channel>`: This connects `channel` to the time slider.
+* `arduinoUpdateChannel <channel> <delta>`: Adds `delta` to the attribute connected to `channel`. The final user should not invoke this command.
