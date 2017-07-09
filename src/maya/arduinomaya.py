@@ -2,6 +2,11 @@ import sys
 import maya.api.OpenMaya as OpenMaya
 import pymel.core as pmc
 
+# GUI imports
+from maya import OpenMayaUI as omui
+from PySide2 import QtCore, QtGui, QtWidgets
+from shiboken2 import wrapInstance
+
 CHANNELS_NUM = 3
 
 
@@ -112,6 +117,30 @@ class UpdateChannelCommand(OpenMaya.MPxCommand):
             obj.setAttr(obj_attr, value)
 
 
+class GUIControlsCommand(OpenMaya.MPxCommand):
+    commandName = 'arduinoGUI'
+    syntax = 'Syntax: ' + commandName + ' <command>'
+
+    def __init__(self):
+        OpenMaya.MPxCommand.__init__(self)
+        self.window = Window()
+
+    @staticmethod
+    def commandCreator():
+        return GUIControlsCommand()
+
+    def doIt(self, args):
+        syntax = GUIControlsCommand.syntax
+        if len(args) != 1:
+            raise ValueError('Wrong arguments number. ' + syntax)
+
+        cmd = args.asString(0)
+        if cmd == 'show':
+            self.window.show()
+        else:
+            raise ValueError('Command not recognized.')
+
+
 ##########################################################
 # Plug-in initialization.
 ##########################################################
@@ -149,6 +178,16 @@ def initializePlugin(mobject):
         sys.stderr.write(
             'Failed to register command: ' + UpdateChannelCommand.commandName)
         raise
+    
+    try:
+        mplugin.registerCommand(
+            GUIControlsCommand.commandName,
+            GUIControlsCommand.commandCreator
+        )
+    except:
+        sys.stderr.write(
+            'Failed to register command: ' + GUIControlsCommand.commandName)
+        raise
 
 
 def uninitializePlugin(mobject):
@@ -176,3 +215,24 @@ def uninitializePlugin(mobject):
         sys.stderr.write(
             'Failed to unregister command: ' + UpdateChannelCommand.commandName)
         raise
+
+    try:
+        mplugin.deregisterCommand(GUIControlsCommand.commandName)
+    except:
+        sys.stderr.write(
+            'Failed to unregister command: ' + GUIControlsCommand.commandName)
+        raise
+
+
+##########################################################
+# GUI
+##########################################################
+
+def getMayaWindow():
+    ptr = omui.MQtUtil.mainWindow()
+    return wrapInstance(long(ptr), QtWidgets.QWidget)
+
+
+class Window(QtWidgets.QMainWindow):
+    def __init__(self, parent=getMayaWindow()):
+        super(Window, self).__init__(parent)
