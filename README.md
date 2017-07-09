@@ -13,9 +13,9 @@ This repository contains:
     ([src/arduino](https://github.com/giuliom95/arduino-maya/tree/master/src/arduino))
 
 ## How to use this
-### What do you need
+### What do you need 
 * An Arduino board. _I've used an UNO v3. Other boards are ok. Just watch out for interrupt mappings_
-* Three potentiometers. _I reccomend sliders. But the choice is yours_
+* Three potentiometers. _I recommend sliders. But the choice is yours_
 * Jumper wires
 * pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial))
 * Maya. _I've used the 2017 v3 Student Edition. Not too old versions are fine too_
