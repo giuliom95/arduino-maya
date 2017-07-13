@@ -3,10 +3,10 @@ import maya.api.OpenMaya as OpenMaya
 import pymel.core as pmc
 
 CHANNELS_NUM = 3
-
+CHANNEL_MAX = 1023.
 
 class Channel():
-    channels = [('', '')]*CHANNELS_NUM
+    channels = [{}]*CHANNELS_NUM
 
 
 def maya_useNewAPI():
@@ -32,14 +32,16 @@ class ConnectAttributeCommand(OpenMaya.MPxCommand):
         return ConnectAttributeCommand()
 
     def doIt(self, args):
-        syntax = 'Syntax: channel, object name, object attribute'
-        if len(args) != 3:
+        syntax = 'Syntax: <channel>, <object name>, <object attribute>, <min value>, <max value>'
+        if len(args) != 5:
             raise ValueError('Wrong arguments number. ' + syntax)
 
         try:
             channel = args.asInt(0)
-            obj_name = args.asString(1)
-            obj_attr = args.asString(2)
+            objName = args.asString(1)
+            objAttr = args.asString(2)
+            minVal = args.asFloat(3)
+            maxVal = args.asInt(4)
         except:
             raise ValueError('Invalid arguments. ' + syntax)
 
@@ -47,18 +49,17 @@ class ConnectAttributeCommand(OpenMaya.MPxCommand):
             raise ValueError('Invalid channel number. ' + syntax)
 
         try:
-            obj = pmc.ls(obj_name)[0]
+            obj = pmc.ls(objName)[0]
         except:
-            raise ValueError('No object called ' + obj_name)
+            raise ValueError('No object called ' + objName)
 
-        if not obj.hasAttr(obj_attr):
-            raise ValueError('No attribute of ' + obj_name + ' called ' + obj_attr)
+        if not obj.hasAttr(objAttr):
+            raise ValueError('No attribute of ' + objName + ' called ' + objAttr)
 
-        if type(obj.getAttr(obj_attr)) != float:
-            raise ValueError('Attribute ' + obj_attr + ' of ' + obj_name + ' is not a float.' )
+        if type(obj.getAttr(objAttr)) != float:
+            raise ValueError('Attribute ' + objAttr + ' of ' + objName + ' is not a float.')
 
-        Channel.channels[channel] = (obj_name, obj_attr)
-
+        Channel.channels[channel] = {'obj': objName, 'attr': objAttr, 'min': minVal, 'max': maxVal}
 
 class ConnectTimeCommand(OpenMaya.MPxCommand):
     commandName = 'arduinoConnectTime'
@@ -98,18 +99,20 @@ class UpdateChannelCommand(OpenMaya.MPxCommand):
 
     def doIt(self, args):
         channel = args.asInt(0)
-        delta = args.asInt(1)
+        value = args.asInt(1)
+
         if Channel.channels[channel] == 'time':
-            new_t = pmc.currentTime() + delta
-            pmc.currentTime(new_t)
+            newT = pmc.currentTime() + value
+            pmc.currentTime(newT)
         else:
-            obj_name, obj_attr = Channel.channels[channel]
-            if obj_name == '':
+            ch = Channel.channels[channel]
+            objName = ch['obj']
+            objAttr = ch['attr']
+            if objName == '':
                 return
-            obj = pmc.ls(obj_name)[0]
-            value = obj.getAttr(obj_attr)
-            value += delta
-            obj.setAttr(obj_attr, value)
+            obj = pmc.ls(objName)[0]
+            newValue = (ch['max']-ch['min'])*(value / CHANNEL_MAX) + ch['min']
+            obj.setAttr(objAttr, newValue)
 
 
 ##########################################################
