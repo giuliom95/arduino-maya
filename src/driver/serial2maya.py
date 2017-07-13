@@ -29,18 +29,22 @@ if __name__ == '__main__':
     arduinoconn = serial.Serial(ARDUINO_PORT)
     print('[INFO] Arduino connection established.')
 
+    oldValues = [-1]*3
+
     while True:
-        deltas = arduinoconn.readline().split()
-        for i, d in enumerate(deltas):
+        values = arduinoconn.readline().split()
+        for i, v in enumerate(values):
+            vInt = 0
             try:
-                int(d)
+                vInt = int(v)
             except:
                 pass
             else:
-                if d != '0':
-                    cmd = 'arduinoUpdateChannel ' + str(i) + ' ' + d
+                if oldValues[i] != vInt:
+                    cmd = 'arduinoUpdateChannel ' + str(i) + ' ' + v
                     mayaconn.send(cmd)
-
+                    time.sleep(.002)
+                oldValues[i] = vInt
     arduinoconn.close()
     print('[INFO] Arduino connection closed.')
 
