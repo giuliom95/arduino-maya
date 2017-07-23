@@ -6,6 +6,7 @@ import pymel.core as pmc
 from maya import OpenMayaUI as omui
 from PySide2 import QtCore, QtGui, QtWidgets
 from shiboken2 import wrapInstance
+from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 
 CHANNELS_NUM = 3
 CHANNEL_MAX = 1023.
@@ -247,6 +248,26 @@ def getMayaWindow():
     return wrapInstance(long(ptr), QtWidgets.QWidget)
 
 
-class Window(QtWidgets.QMainWindow):
-    def __init__(self, parent=getMayaWindow()):
-        super(Window, self).__init__(parent)
+class Window(MayaQWidgetDockableMixin, QtWidgets.QDialog):
+    def __init__(self, *args, **kwargs):
+        super(Window, self).__init__(*args, **kwargs)
+
+        self.setParent(getMayaWindow())
+        self.setWindowFlags(QtCore.Qt.Window)
+
+        self.setObjectName('arduinoMaya_GUI') 
+        self.setWindowTitle('Arduino Maya')
+
+        self.initUI()
+
+    def initUI(self):
+
+        layout = QtWidgets.QVBoxLayout()
+        btn1 = QtWidgets.QPushButton('Hello Word 1')
+        btn2 = QtWidgets.QPushButton('Hello Word 2')
+        btn3 = QtWidgets.QPushButton('Hello Word 3')
+
+        layout.addWidget(btn1)
+        layout.addWidget(btn2)
+        layout.addWidget(btn3)
+        self.setLayout(layout)
