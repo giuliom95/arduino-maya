@@ -262,12 +262,20 @@ class Window(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def initUI(self):
 
-        layout = QtWidgets.QVBoxLayout()
-        btn1 = QtWidgets.QPushButton('Hello Word 1')
-        btn2 = QtWidgets.QPushButton('Hello Word 2')
-        btn3 = QtWidgets.QPushButton('Hello Word 3')
+        hLayout = QtWidgets.QHBoxLayout(self)
+        hLayout.setSpacing(0)
+        hLayout.setContentsMargins(0, 0, 0, 0)
 
-        layout.addWidget(btn1)
-        layout.addWidget(btn2)
-        layout.addWidget(btn3)
-        self.setLayout(layout)
+        self.objList = QtWidgets.QListWidget()
+        self.objList.addItems([str(i) for i in pmc.ls()])
+        self.objList.itemSelectionChanged.connect(self.objSelected)
+        hLayout.addWidget(self.objList)
+
+        l = QtWidgets.QListWidget()
+        l.addItems([str(i) for i in pmc.ls()])
+        hLayout.addWidget(l)
+
+        self.setLayout(hLayout)
+
+    def objSelected(self):
+        print self.objList.selectedItems()[0].text()
