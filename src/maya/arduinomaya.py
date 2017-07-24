@@ -257,6 +257,7 @@ class Window(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.setWindowTitle('Arduino Maya')
 
         self.initUI()
+        self.updateValues()
 
     def initUI(self):
         vLayout = QtWidgets.QVBoxLayout(self)
@@ -271,6 +272,7 @@ class Window(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         upperLayout.addWidget(self.objLabel)
 
         reloadBtn = QtWidgets.QPushButton('Reload')
+        reloadBtn.clicked.connect(self.updateValues)
         upperLayout.addWidget(reloadBtn)
 
         vLayout.addLayout(upperLayout)
@@ -281,26 +283,71 @@ class Window(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.chLabels = [None]*CHANNELS_NUM
         self.minLine = [None]*CHANNELS_NUM
         self.maxLine = [None]*CHANNELS_NUM
-        for i in range(CHANNELS_NUM):
-            self.chLabels[i] = QtWidgets.QLabel('Channel #{0}'.format(i+1))
-            self.chLabels[i].setContentsMargins(11, 0, 11, 0)
+        for c in range(CHANNELS_NUM):
+            # This will display 'ERROR' only if Window.updateValues() fails
+            self.chLabels[c] = QtWidgets.QLabel('ERROR')
+            self.chLabels[c].setContentsMargins(11, 0, 11, 0)
 
-            self.minLine[i] = QtWidgets.QLineEdit()
-            self.minLine[i].setPlaceholderText('Min')
-            self.minLine[i].setFixedWidth(50)
+            self.minLine[c] = QtWidgets.QLineEdit()
+            self.minLine[c].setValidator(QtGui.QDoubleValidator())
+            self.minLine[c].setPlaceholderText('Min')
+            self.minLine[c].setFixedWidth(50)
 
-            self.maxLine[i] = QtWidgets.QLineEdit()
-            self.maxLine[i].setPlaceholderText('Max')
-            self.maxLine[i].setFixedWidth(50)
+            self.maxLine[c] = QtWidgets.QLineEdit()
+            self.maxLine[c].setValidator(QtGui.QDoubleValidator())
+            self.maxLine[c].setPlaceholderText('Max')
+            self.maxLine[c].setFixedWidth(50)
 
-            connectBtn = QtWidgets.QPushButton('Connect')
-            connectBtn.setFixedWidth(70)
+            connectBtn = QtWidgets.QPushButton('Connect channel #{0}'.format(c))
+            connectBtn.clicked.connect(self.channelBtnClicked(c))
+            connectBtn.setFixedWidth(120)
 
             row = QtWidgets.QHBoxLayout(self)
-            row.addWidget(self.chLabels[i])
-            row.addWidget(self.minLine[i])
-            row.addWidget(self.maxLine[i])
+            row.addWidget(self.chLabels[c])
+            row.addWidget(self.minLine[c])
+            row.addWidget(self.maxLine[c])
             row.addWidget(connectBtn)
             vLayout.addLayout(row)
 
         self.setLayout(vLayout)
+
+    def getAttrList(self):
+        attr_names = []
+        selection = pmc.ls(sl=True)
+        if len(selection) > 0:
+            obj = selection[0]
+            self.objLabel.setText(str(obj))
+            attrs = obj.listAttr(c=True, s=True, se=True, v=True, r=True, w=True, u=True, k=True)
+            attr_names = [a.attrName(longName=True) for a in attrs]
+            attr_names.sort()
+        return attr_names
+
+    def channelBtnClicked(self, channel):
+        def cbc():
+            minVal = float(self.minLine[channel].text())
+            maxVal = float(self.maxLine[channel].text())
+            attr = self.attrList.selectedItems()[0].text()
+            obj = self.objLabel.text()
+            pmc.arduinoConnectAttribute(channel, obj, attr, minVal, maxVal)
+            self.updateValues()
+
+        return cbc
+
+    def updateValues(self):
+        self.attrList.clear()
+        self.objLabel.setText('Nothing selected')
+        self.attrList.addItems(self.getAttrList())
+
+        for c in range(CHANNELS_NUM):
+            minVal = maxVal = ''
+            assignedVal = 'Not assigned'
+
+            ch = Channels.channels[c]
+            if ch is not None:
+                minVal = str(ch['min'])
+                maxVal = str(ch['max'])
+                assignedVal = ch['obj'] + '.' + ch['attr']
+
+            self.chLabels[c].setText(assignedVal)
+            self.minLine[c].setText(minVal)
+            self.maxLine[c].setText(maxVal)
