@@ -13,7 +13,7 @@ CHANNEL_MAX = 1023.
 
 
 class Channels():
-    channels = [{}]*CHANNELS_NUM
+    channels = [None]*CHANNELS_NUM
 
 
 def maya_useNewAPI():
@@ -112,24 +112,22 @@ class UpdateChannelCommand(OpenMaya.MPxCommand):
             value = args.asInt(1)
         except TypeError:
             # We ignore broken data incoming from the driver
-            pass
+            return
 
-        if Channels.channels[channel] == 'time':
+        ch = Channels.channels[channel]
+
+        if ch == 'time':
             newT = pmc.currentTime() + value
             pmc.currentTime(newT)
-        else:
-            try:
-                ch = Channels.channels[channel]
-                objName = ch['obj']
-                objAttr = ch['attr']
-                if objName == '':
-                    return
-                obj = pmc.ls(objName)[0]
-                newValue = (ch['max']-ch['min'])*(value / CHANNEL_MAX) + ch['min']
-                obj.setAttr(objAttr, newValue)
-            except KeyError:
-                # This should happen only if channel has not been set up
-                pass
+        elif ch is not None:
+            ch = Channels.channels[channel]
+            objName = ch['obj']
+            objAttr = ch['attr']
+            if objName == '':
+                return
+            obj = pmc.ls(objName)[0]
+            newValue = (ch['max']-ch['min'])*(value / CHANNEL_MAX) + ch['min']
+            obj.setAttr(objAttr, newValue)
 
 
 class GUIControlsCommand(OpenMaya.MPxCommand):
@@ -273,7 +271,6 @@ class Window(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         upperLayout.addWidget(self.objLabel)
 
         reloadBtn = QtWidgets.QPushButton('Reload')
-        reloadBtn.clicked.connect(self.reloadClicked)
         upperLayout.addWidget(reloadBtn)
 
         vLayout.addLayout(upperLayout)
