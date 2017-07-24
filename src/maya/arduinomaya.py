@@ -261,21 +261,49 @@ class Window(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.initUI()
 
     def initUI(self):
+        vLayout = QtWidgets.QVBoxLayout(self)
+        vLayout.setSpacing(0)
+        vLayout.setContentsMargins(0, 0, 0, 0)
 
-        hLayout = QtWidgets.QHBoxLayout(self)
-        hLayout.setSpacing(0)
-        hLayout.setContentsMargins(0, 0, 0, 0)
+        upperLayout = QtWidgets.QHBoxLayout(self)
+        upperLayout.setSpacing(0)
 
-        self.objList = QtWidgets.QListWidget()
-        self.objList.addItems([str(i) for i in pmc.ls()])
-        self.objList.itemSelectionChanged.connect(self.objSelected)
-        hLayout.addWidget(self.objList)
+        self.objLabel = QtWidgets.QLabel('Nothing selected')
+        self.objLabel.setIndent(11)
+        upperLayout.addWidget(self.objLabel)
 
-        l = QtWidgets.QListWidget()
-        l.addItems([str(i) for i in pmc.ls()])
-        hLayout.addWidget(l)
+        reloadBtn = QtWidgets.QPushButton('Reload')
+        reloadBtn.clicked.connect(self.reloadClicked)
+        upperLayout.addWidget(reloadBtn)
 
-        self.setLayout(hLayout)
+        vLayout.addLayout(upperLayout)
 
-    def objSelected(self):
-        print self.objList.selectedItems()[0].text()
+        self.attrList = QtWidgets.QListWidget()
+        vLayout.addWidget(self.attrList)
+
+        self.chLabels = [None]*CHANNELS_NUM
+        self.minLine = [None]*CHANNELS_NUM
+        self.maxLine = [None]*CHANNELS_NUM
+        for i in range(CHANNELS_NUM):
+            self.chLabels[i] = QtWidgets.QLabel('Channel #{0}'.format(i+1))
+            self.chLabels[i].setContentsMargins(11, 0, 11, 0)
+
+            self.minLine[i] = QtWidgets.QLineEdit()
+            self.minLine[i].setPlaceholderText('Min')
+            self.minLine[i].setFixedWidth(50)
+
+            self.maxLine[i] = QtWidgets.QLineEdit()
+            self.maxLine[i].setPlaceholderText('Max')
+            self.maxLine[i].setFixedWidth(50)
+
+            connectBtn = QtWidgets.QPushButton('Connect')
+            connectBtn.setFixedWidth(70)
+
+            row = QtWidgets.QHBoxLayout(self)
+            row.addWidget(self.chLabels[i])
+            row.addWidget(self.minLine[i])
+            row.addWidget(self.maxLine[i])
+            row.addWidget(connectBtn)
+            vLayout.addLayout(row)
+
+        self.setLayout(vLayout)
