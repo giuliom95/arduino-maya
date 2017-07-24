@@ -132,7 +132,6 @@ class UpdateChannelCommand(OpenMaya.MPxCommand):
 
 class GUIControlsCommand(OpenMaya.MPxCommand):
     commandName = 'arduinoGUI'
-    syntax = 'Syntax: ' + commandName + ' <command>'
 
     def __init__(self):
         OpenMaya.MPxCommand.__init__(self)
@@ -143,15 +142,7 @@ class GUIControlsCommand(OpenMaya.MPxCommand):
         return GUIControlsCommand()
 
     def doIt(self, args):
-        syntax = GUIControlsCommand.syntax
-        if len(args) != 1:
-            raise RuntimeError('Wrong arguments number. ' + syntax)
-
-        cmd = args.asString(0)
-        if cmd == 'show':
-            self.window.show()
-        else:
-            raise RuntimeError('Command not recognized.')
+        self.window.show()
 
 
 ##########################################################
