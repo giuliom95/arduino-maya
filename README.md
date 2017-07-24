@@ -22,10 +22,12 @@ This repository contains:
 ### Quick Start
 1. Follow this circuit diagram to make the connections:  
 ![Circuit diagram](https://cdn.rawgit.com/giuliom95/arduino-maya/master/docs/images/circuit.svg)
-2. Flash the Arduino sketch `src/arduino/firmware.ino` to your board
-3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder
-4. Load the `arduinomaya.py` plugin within a Maya session
-5. Connect the three available channels to attributes or the time slider with the `arduinoConnectAttribute` and `arduinoConnectTime` commands (see below for reference)
+2. Flash the Arduino sketch `src/arduino/firmware.ino` to your board.
+3. Put the `src/maya-plugin/arduinomaya.py` plugin into the Maya `plug-ins` folder.
+4. Load the `arduinomaya.py` plugin within a Maya session.
+5. Start the `src/driver/serial2maya.py` script.
+5. Connect the three available channels using the GUI that can be brought up with the `arduinoGUI` command.
+6. Enjoy.
 
 ## How does this works
 Here an approximate system diagram:  
@@ -40,7 +42,8 @@ The provided Arduino firmware reads the three analog signals that comes into `A0
 ### 2: The "bridge" program
 It is a Python script that uses the `pySerial` lib for Arduino to PC serial communication and the `socket` module to send messages to Maya. It runs an endless loop that launches the MEL command defined in the Maya plugin.
 ### 3: The Maya plugin
-The plugin adds three commands:  
+The plugin adds four commands. Usually the user should invoke only `arduinoGUI`.
+* `arduinoGUI`: Brings up the GUI.
 * `arduinoConnectAttribute <channel> <object> <attribute>`: This connects the `channel` to the `attribute` of the given `object`. The `attribute` must be a float attribute. **Example:** `arduinoConnectAttribute 0 pCube1 rotateX` this connects the first channel (or potentiometer if you are using the firmware provided here) to the attribute `rotateX` of the `pCube1` object.
 * `arduinoConnectTime <channel>`: This connects `channel` to the time slider.
-* `arduinoUpdateChannel <channel> <delta>`: Adds `delta` to the attribute connected to `channel`. The final user should not invoke this command.
+* `arduinoUpdateChannel <channel> <delta>`: Adds `delta` to the attribute connected to `channel`.
