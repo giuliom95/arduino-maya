@@ -41,7 +41,7 @@ if __name__ == '__main__':
                 pass
             else:
                 if oldValues[i] != vInt:
-                    cmd = 'arduinoUpdateChannel ' + str(i) + ' ' + v
+                    cmd = 'arduinoUpdateChannel ' + str(i) + ' ' + v.decode('ascii')
                     mayaconn.send(cmd)
                     time.sleep(.002)
                 oldValues[i] = vInt
