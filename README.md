@@ -1,4 +1,7 @@
 # Arduino-Maya communication suite
+
+## PROJECT MOVED TO GITLAB - [https://gitlab.com/giuliom95/arduino-maya](https://gitlab.com/giuliom95/arduino-maya)
+
 Software to make an Arduino board and a Maya session communicate.  
 This can be particularly useful to create custom input devices.  
 It is programmed in Python and Arduino language. It uses pySerial ([https://github.com/pyserial/pyserial](https://github.com/pyserial/pyserial)).  
